@@ -8,17 +8,22 @@ def solve(rows, cols)
   rows.each_with_index { |row, idx| fill_if_full(row, cols.size, idx, true) }
   cols.each_with_index { |col, idx| fill_if_full(col, rows.size, idx, false) }
 
-  # this group of code may be repeated more...
-  rows.each_with_index { |row, idx| fill_if_done(row, cols.size, idx, true) unless @complete_row[idx] }
-  cols.each_with_index { |col, idx| fill_if_done(col, rows.size, idx, false) unless @complete_col[idx] }
-  rows.each_with_index { |row, idx| fill_if_intersect(row, cols.size, idx, true) unless @complete_row[idx] }
-  cols.each_with_index { |col, idx| fill_if_intersect(col, rows.size, idx, false) unless @complete_col[idx] }
+  # loop until it is done or there is some changes
+  while !isDone? && @isChanged
+    rows.each_with_index { |row, idx| fill_if_done(row, cols.size, idx, true) unless @complete_row[idx] }
+    cols.each_with_index { |col, idx| fill_if_done(col, rows.size, idx, false) unless @complete_col[idx] }
 
-  # as example for this hardcoded puzzle it needs to be repeated twice
-  rows.each_with_index { |row, idx| fill_if_done(row, cols.size, idx, true) unless @complete_row[idx] }
-  cols.each_with_index { |col, idx| fill_if_done(col, rows.size, idx, false) unless @complete_col[idx] }
-  rows.each_with_index { |row, idx| fill_if_intersect(row, cols.size, idx, true) unless @complete_row[idx] }
-  cols.each_with_index { |col, idx| fill_if_intersect(col, rows.size, idx, false) unless @complete_col[idx] }
+    break if isDone?
+
+    @isChanged = false
+    rows.each_with_index { |row, idx| fill_if_intersect(row, cols.size, idx, true) unless @complete_row[idx] }
+    cols.each_with_index { |col, idx| fill_if_intersect(col, rows.size, idx, false) unless @complete_col[idx] }
+  end
+end
+
+# check if the solution is done
+def isDone?
+  @complete_row.all? && @complete_col.all?
 end
 
 # fill the answer per cell
@@ -31,6 +36,7 @@ def fill(row, col, value)
   end
 
   @solution[row][col] = value
+  @isChanged = true
 end
 
 # fill the row/col with full answer if the condition meets
