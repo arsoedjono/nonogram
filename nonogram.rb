@@ -4,22 +4,25 @@ def solve(rows, cols)
   @complete_row = Array.new(rows.size, false)
   @complete_col = Array.new(cols.size, false)
 
+  # greedy approach to directly fill any rows/cols with obvious correct answer
   rows.each_with_index { |row, idx| fill_if_full(row, cols.size, idx, true) }
   cols.each_with_index { |col, idx| fill_if_full(col, rows.size, idx, false) }
 
-  rows.each_with_index { |row, idx| fill_if_done(row, cols.size, idx, true) }
-  cols.each_with_index { |col, idx| fill_if_done(col, rows.size, idx, false) }
-
+  # this group of code may be repeated more...
+  rows.each_with_index { |row, idx| fill_if_done(row, cols.size, idx, true) unless @complete_row[idx] }
+  cols.each_with_index { |col, idx| fill_if_done(col, rows.size, idx, false) unless @complete_col[idx] }
   rows.each_with_index { |row, idx| fill_if_intersect(row, cols.size, idx, true) unless @complete_row[idx] }
   cols.each_with_index { |col, idx| fill_if_intersect(col, rows.size, idx, false) unless @complete_col[idx] }
 
-  rows.each_with_index { |row, idx| fill_if_done(row, cols.size, idx, true) }
-  cols.each_with_index { |col, idx| fill_if_done(col, rows.size, idx, false) }
-
+  # as example for this hardcoded puzzle it needs to be repeated twice
+  rows.each_with_index { |row, idx| fill_if_done(row, cols.size, idx, true) unless @complete_row[idx] }
+  cols.each_with_index { |col, idx| fill_if_done(col, rows.size, idx, false) unless @complete_col[idx] }
   rows.each_with_index { |row, idx| fill_if_intersect(row, cols.size, idx, true) unless @complete_row[idx] }
   cols.each_with_index { |col, idx| fill_if_intersect(col, rows.size, idx, false) unless @complete_col[idx] }
 end
 
+# fill the answer per cell
+# will raise error if the cell has already filled with different value
 def fill(row, col, value)
   return if @solution[row][col] == value
 
@@ -30,6 +33,9 @@ def fill(row, col, value)
   @solution[row][col] = value
 end
 
+# fill the row/col with full answer if the condition meets
+# ex. row [5] with size 5   -> 'ooooo'
+#     row [1,3] with size 5 -> 'oxooo'
 def fill_if_full(nums, size, idx, isRow)
   return if nums.size == 1 && nums.first != size
   return unless (nums.sum + nums.size - 1) == size
@@ -51,6 +57,8 @@ def fill_if_full(nums, size, idx, isRow)
   (isRow ? @complete_row : @complete_col)[idx] = true
 end
 
+# complete the row/col if the row/col is done
+# fill the other cells with 'x'
 def fill_if_done(nums, size, idx, isRow)
   check_idx = 0
   counter = 0
@@ -79,6 +87,10 @@ def fill_if_done(nums, size, idx, isRow)
   (isRow ? @complete_row : @complete_col)[idx] = true
 end
 
+# create two temporary arrays which is filled with the puzzle numbers
+# - first array filled from the start
+# - second array filled from the end
+# then it will be compared and if the same index is equal then fill it with 'o'
 def fill_if_intersect(nums, size, idx, isRow)
   current_line = []
 
@@ -144,16 +156,12 @@ def fill_if_intersect(nums, size, idx, isRow)
   end
 end
 
-solve([[3], [1,3], [3,1], [1,2], [1]], [[3], [1,1], [5], [2,1], [2]])
+# change the nonogram puzzle inputs here (as function parameters)
+# as array of array of number
+solve(
+  [[3], [1,3], [3,1], [1,2], [1]],    # row (top - bottom)
+  [[3], [1,1], [5], [2,1], [2]]       # columns (left - right)
+)
+
+# print the result
 puts @solution.map(&:join).join("\n").gsub('x', ' ')
-
-=begin
-       1     2
-    3  1  5  1  2
-  3 x  o  o  o  x
-1 3 o  x  o  o  o
-3 1 o  o  o  x  o
-1 2 o  x  o  o  x
-  1 x  x  o  x  x
-
-=end
