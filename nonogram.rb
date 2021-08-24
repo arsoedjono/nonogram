@@ -25,7 +25,11 @@ class Nonogram
       @cols.each_with_index { |col, idx| fill_if_intersect(col, @rows.size, idx, false) unless @complete_col[idx] }
     end
 
-    @solution
+    self
+  end
+
+  def to_s
+    @solution.map(&:join).join("\n").gsub('x', ' ')
   end
 
   private
@@ -180,4 +184,4 @@ solution = Nonogram.new(
 )
 
 # print the result
-puts solution.solve.map(&:join).join("\n").gsub('x', ' ')
+puts solution.solve.to_s
