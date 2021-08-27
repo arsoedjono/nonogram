@@ -1,4 +1,6 @@
 class Nonogram
+  attr_reader :solution
+
   def initialize(rows, cols)
     @rows = rows
     @cols = cols
